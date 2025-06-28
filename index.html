@@ -2,56 +2,45 @@
 <html>
 <head>
     <style>
-        /* Complete reset for all elements */
+        /* Nuclear reset - kills all potential spacing */
         * {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            box-sizing: border-box;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            outline: 0 !important;
+            box-sizing: border-box !important;
+            line-height: 0 !important;
+            font-size: 0 !important;
         }
         
-        /* Anchor styles (minimal impact, but kept for consistency) */
-        a, a:visited, a:active, a:hover {
-            color: #000000;
-            text-decoration: none;
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            background: #000 !important;
         }
         
-        /* Body reset with WebOS-specific fixes */
-        body, html {
-            background-color: #000000;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-        
-        /* Video element - WebOS optimized */
         #video_e4bf9ac {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #000000;
-            display: block;
-            /* WebOS-specific tweaks */
-            transform: translateZ(0); /* Force hardware acceleration */
-            margin: 0;
-            padding: 0;
-            outline: none;
-        }
-        
-        .textstyle1 {
-            text-align: left;
+            position: fixed !important;
+            top: -1px !important;  /* Force pull-up */
+            left: 0 !important;
+            width: 100.1% !important;  /* Slight overextension */
+            height: 100.1% !important;
+            object-fit: cover !important;
+            background: #000 !important;
+            display: block !important;
+            transform: translateZ(0) !important;  /* Hardware accelerate */
+            margin: -1px !important;  /* Negative margin */
+            padding: 0 !important;
         }
     </style>
 </head>
 <body>
     <video id="video_e4bf9ac" autoplay muted loop playsinline>
-        <source src="rc_images/untitled_project.mp4" type="video/mp4">
+        <source src="your-video.mp4" type="video/mp4">
     </video>
 </body>
 </html>
