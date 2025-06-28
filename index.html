@@ -1,61 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html> 
 <head>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        #player-container {
-            position: fixed;
-            width: 100vw;
-            height: 100vh;
-        }
-        .fallback-message {
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-    </style>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="RocketCake">
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="index_html.css?h=a1d38176">
 </head>
 <body>
-    <div id="player-container">
-        <div id="player"></div>
-        <div id="fallback" class="fallback-message" style="display:none;">
-            Video unavailable - Try watching on <a href="https://youtu.be/ZWI7Tm7uZQ0" target="_blank" style="color: #fff;">YouTube</a>
-        </div>
-    </div>
-
-    <script>
-        // Load YouTube API
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        function onYouTubeIframeAPIReady() {
-            new YT.Player('player', {
-                videoId: 'ZWI7Tm7uZQ0',
-                playerVars: {
-                    autoplay: 1,
-                    mute: 1,
-                    loop: 1,
-                    playlist: 'ZWI7Tm7uZQ0',
-                    controls: 0,
-                    rel: 0
-                },
-                events: {
-                    'onError': onPlayerError,
-                    'onReady': onPlayerReady
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
-
-        function onPlayerError(event) {
-            document.getElementById('fallback').style.display = 'block';
-            console.error("YouTube Error:", event.data);
-        }
-    </script>
+<div class="textstyle1">
+  <video  id="video_e4bf9ac" src="rc_images/untitled_project.mp4" controls="controls"  autoplay="autoplay"  loop="true" >
+Your browser does not support the video element.
+    </video>
+  </div>
 </body>
 </html>
