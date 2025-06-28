@@ -1,21 +1,61 @@
-<style>
-  body { margin: 0; overflow: hidden; }
-  #youtube-bg {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    z-index: -1;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        #player-container {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+        }
+        .fallback-message {
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="player-container">
+        <div id="player"></div>
+        <div id="fallback" class="fallback-message" style="display:none;">
+            Video unavailable - Try watching on <a href="https://youtu.be/ZWI7Tm7uZQ0" target="_blank" style="color: #fff;">YouTube</a>
+        </div>
+    </div>
 
-<iframe 
-  id="youtube-bg"
-  src="https://www.youtube.com/embed/ZWI7Tm7uZQ0?loop=1&playlist=ZWI7Tm7uZQ0&autoplay=1&mute=1&controls=1&showinfo=0&rel=0" 
-  frameborder="0" 
-  allowfullscreen>
-</iframe>
+    <script>
+        // Load YouTube API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            new YT.Player('player', {
+                videoId: 'ZWI7Tm7uZQ0',
+                playerVars: {
+                    autoplay: 1,
+                    mute: 1,
+                    loop: 1,
+                    playlist: 'ZWI7Tm7uZQ0',
+                    controls: 0,
+                    rel: 0
+                },
+                events: {
+                    'onError': onPlayerError,
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+        }
+
+        function onPlayerError(event) {
+            document.getElementById('fallback').style.display = 'block';
+            console.error("YouTube Error:", event.data);
+        }
+    </script>
+</body>
+</html>
