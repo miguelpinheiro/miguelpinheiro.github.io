@@ -1,30 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Custom YouTube Looper</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background: #000;
-        }
+        body { margin: 0; overflow: hidden; background: #000; }
         #player-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
         }
-        #player {
-            width: 100%;
-            height: 100%;
+        .fallback-message {
+            color: white;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
     <div id="player-container">
         <div id="player"></div>
+        <div id="fallback" class="fallback-message" style="display:none;">
+            Video unavailable - Try watching on <a href="https://youtu.be/ZWI7Tm7uZQ0" target="_blank" style="color: #fff;">YouTube</a>
+        </div>
     </div>
 
     <script>
@@ -34,39 +30,31 @@
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        var player;
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
+            new YT.Player('player', {
                 videoId: 'ZWI7Tm7uZQ0',
                 playerVars: {
-                    'autoplay': 1,
-                    'controls': 0,
-                    'disablekb': 1,
-                    'fs': 0,
-                    'loop': 1,
-                    'modestbranding': 1,
-                    'playlist': 'ZWI7Tm7uZQ0',
-                    'rel': 0,
-                    'mute': 1  // Force muted
+                    autoplay: 1,
+                    mute: 1,
+                    loop: 1,
+                    playlist: 'ZWI7Tm7uZQ0',
+                    controls: 0,
+                    rel: 0
                 },
                 events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
+                    'onError': onPlayerError,
+                    'onReady': onPlayerReady
                 }
             });
         }
 
         function onPlayerReady(event) {
             event.target.playVideo();
-            // Video is already muted via playerVars
         }
 
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                event.target.playVideo(); // Backup looping
-            }
+        function onPlayerError(event) {
+            document.getElementById('fallback').style.display = 'block';
+            console.error("YouTube Error:", event.data);
         }
     </script>
 </body>
