@@ -1,17 +1,57 @@
 <!DOCTYPE html>
-<html> 
+<html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="generator" content="RocketCake">
-	<title></title>
-	<link rel="stylesheet" type="text/css" href="index_html.css?h=a1d38176">
+    <style>
+        /* Complete reset for all elements */
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Anchor styles (minimal impact, but kept for consistency) */
+        a, a:visited, a:active, a:hover {
+            color: #000000;
+            text-decoration: none;
+        }
+        
+        /* Body reset with WebOS-specific fixes */
+        body, html {
+            background-color: #000000;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Video element - WebOS optimized */
+        #video_e4bf9ac {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000000;
+            display: block;
+            /* WebOS-specific tweaks */
+            transform: translateZ(0); /* Force hardware acceleration */
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+        
+        .textstyle1 {
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-<div class="textstyle1">
-  <video  id="video_e4bf9ac" src="rc_images/untitled_project.mp4" controls="controls"  autoplay="autoplay"  loop="true" >
-Your browser does not support the video element.
+    <video id="video_e4bf9ac" autoplay muted loop playsinline>
+        <source src="rc_images/untitled_project.mp4" type="video/mp4">
     </video>
-  </div>
 </body>
 </html>
