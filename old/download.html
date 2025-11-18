@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Video</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .button {
+            display: inline-block;
+            padding: 20px 40px;
+            margin: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Descarregar vídeo</h1>
+    <p>Clique nos botões abaixo para descarregar:</p>
+    <a href="rc_images/standard.mp4" download="standard.mp4" class="button">Standard</a>
+    <a href="rc_images/hdr.mp4" download="hdr.mp4" class="button">HDR</a>
+</body>
+</html>
