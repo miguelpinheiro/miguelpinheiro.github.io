@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Pair Audio Cable Configurator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --radius: 10px;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 4px;
+            font-size: 1.75rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .control-group select, .control-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #fff;
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        .channels-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .channels-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        #channelsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .channel-row {
+            display: grid;
+            grid-template-columns: 36px 130px 1fr 1fr 1fr 65px;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .channel-row.dragging {
+            opacity: 0.4;
+            background: #cbd5e1;
+            border: 2px dashed #64748b;
+        }
+
+        .drag-handle {
+            color: #94a3b8;
+            font-size: 1.2rem;
+            text-align: center;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .channel-label {
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 0.8rem;
+        }
+
+        .color-badge-inline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            color: #475569;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 3px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            user-select: none;
+            margin-left: -4px;
+        }
+
+        .color-badge-inline:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .field-col label {
+            font-size: 0.7rem;
+            color: #64748b;
+            display: block;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .field-col input, .field-col select {
+            width: 100%;
+            padding: 7px 8px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .reorder-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .btn-mini {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 4px 6px;
+            font-weight: bold;
+            color: #334155;
+            transition: background 0.2s;
+        }
+
+        .btn-mini:hover:not(:disabled) {
+            background: #cbd5e1;
+        }
+
+        /* Visual Cable Preview Styles */
+        .visual-preview-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
+            align-items: start;
+            background: #0f172a;
+            padding: 16px;
+            border-radius: var(--radius);
+            color: #fff;
+            overflow-x: auto;
+        }
+
+        .visual-column h4 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .trunk-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        .trunk-line {
+            width: 10px;
+            height: 100%;
+            min-height: 140px;
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 6px;
+        }
+
+        .visual-breakout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .visual-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border-left: 4px solid #ccc;
+        }
+
+        .visual-item-right {
+            border-left: none;
+            border-right: 4px solid #ccc;
+        }
+
+        .connector-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #334155;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            white-space: nowrap;
+        }
+
+        .connector-badge svg,
+        .connector-badge img.ext-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .connector-badge svg {
+            fill: currentColor;
+        }
+
+        .connector-badge img.ext-icon {
+            filter: invert(0.8) brightness(1.5);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #475569;
+        }
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+
+        #summaryText ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        #summaryText p {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .channel-row {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .channel-row > div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .channel-row .field-col {
+                width: 100%;
+            }
+            .channel-row .field-col input, .channel-row .field-col select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Multi-Pair Audio Cable Configurator</h1>
+    <p class="subtitle">Design, label, reorder, and save custom snake cable setups</p>
+
+    <!-- Configuration Options Card -->
+    <div class="card">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label for="pairCount">Number of Cables (Pairs)</label>
+                <select id="pairCount" onchange="changePairCount()">
+                    <option value="8" selected>8-Cable Snake</option>
+                    <option value="12">12-Cable Snake</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="labelType">Base Identifier Style</label>
+                <select id="labelType" onchange="updateAll()">
+                    <option value="numbered">Numbered (1, 2, 3...)</option>
+                    <option value="colored">Standard Console/Resistor Colors</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="btn-row" style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+            <button class="btn btn-secondary" onclick="saveConfiguration()">💾 Save</button>
+            <button class="btn btn-secondary" onclick="loadConfiguration()">📂 Load</button>
+            <button class="btn btn-secondary" onclick="exportJSON()">⬇️ Export</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ Import</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importJSON(event)">
+        </div>
+    </div>
+
+    <!-- Visual Cable Representation Card -->
+    <div class="card" style="background: #0f172a; border-color: #1e293b;">
+        <h3 style="margin-top:0; color:#f8fafc; text-align:center; font-size: 1rem;">Visual Cable Breakout Preview</h3>
+        <div class="visual-preview-container">
+            <div class="visual-column">
+                <h4>End A Fan-Out</h4>
+                <div id="visualEndAList" class="visual-breakout-list"></div>
+            </div>
+            <div class="trunk-visual">
+                <span style="font-size:0.65rem; color:#94a3b8; margin-bottom:4px;">TRUNK</span>
+                <div class="trunk-line"></div>
+            </div>
+            <div class="visual-column">
+                <h4>End B Fan-Out</h4>
+                <div id="visualEndBList" class="visual-breakout-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Mapping Table Card -->
+    <div class="card">
+        <div class="channels-header">
+            <h3>Channel Configuration</h3>
+            <span style="font-size: 0.8rem; color: #64748b;">Use arrows or drag ☰ to reorder</span>
+        </div>
+        <div id="channelsContainer"></div>
+    </div>
+
+    <!-- Summary / Export Card -->
+    <div class="card">
+        <h3 style="margin-top: 0; font-size: 1.1rem;">Configuration Summary</h3>
+        <div id="summaryText">Configure your cable above to see the summary.</div>
+        <div class="btn-row" style="margin-top: 16px;">
+            <button class="btn" onclick="window.print()">🖨️ Print / Export Sheet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const standardColors = [
+        { name: 'Brown', hex: '#8B4513' },
+        { name: 'Red', hex: '#EF4444' },
+        { name: 'Black', hex: '#1e293b' },
+        { name: 'Yellow', hex: '#EAB308' },
+        { name: 'Green', hex: '#22C55E' },
+        { name: 'Blue', hex: '#3B82F6' },
+        { name: 'White', hex: '#FFFFFF' },
+        { name: 'Grey', hex: '#6B7280' },
+        { name: 'Pink', hex: '#EC4899' },
+        { name: 'Teal', hex: '#14B8A6' },
+        { name: 'Orange', hex: '#F97316' },
+        { name: 'Purple', hex: '#9333EA' }
+    ];
+
+    const connectorOptions = [
+        "XLR Male",
+        "XLR Female",
+        "1/4\" TRS (Balanced)",
+        "1/4\" TS (Unbalanced)",
+        "RCA / Phono",
+        "3.5mm TRS",
+        "Banana Plugs",
+        "Bare Wire"
+    ];
+
+    const connectorIcons = {
+        "XLR Male": '<img src="audio-input-xlr.svg" alt="XLR" class="ext-icon">',
+        "XLR Female": '<img src="audio-input-xlr.svg" alt="XLR" class="ext-icon">',
+        "1/4\" TRS (Balanced)": '<img src="jack-plug.svg" alt="1/4 Inch Jack Plug" class="ext-icon">',
+        "1/4\" TS (Unbalanced)": '<img src="jack-plug.svg" alt="1/4 Inch Jack Plug" class="ext-icon">',
+        "RCA / Phono": '<img src="audio-input-rca.svg" alt="RCA" class="ext-icon">',
+        "3.5mm TRS": '<img src="jack-plug.svg" alt="3.5mm Jack Plug" class="ext-icon">',
+        "Banana Plugs": '<svg viewBox="0 0 24 24"><path d="M3 11h12v2H3zM15 9h3v6h-3zM18 11h4v2h-4z"/></svg>',
+        "Bare Wire": '<svg viewBox="0 0 24 24"><path d="M2 12h8M10 10l4 2-4 2M14 11h8v2h-8z" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
+    };
+
+    let currentChannels = [];
+    let draggedItemIndex = null;
+    const defaultLabels = ["Kick", "Snare", "Hi-Hat", "Tom 1", "Tom 2", "Overhead L", "Overhead R", "Bass DI", "Guitar L", "Guitar R", "Vocals", "Keys"];
+
+    function initDefaultChannels() {
+        const count = parseInt(document.getElementById('pairCount').value);
+        currentChannels = [];
+        for (let i = 0; i < count; i++) {
+            const colorObj = standardColors[i % standardColors.length];
+            currentChannels.push({
+                label: defaultLabels[i] || `Track ${i + 1}`,
+                endA: "XLR Male",
+                endB: "XLR Female",
+                colorName: colorObj.name,
+                colorHex: colorObj.hex
+            });
+        }
+    }
+
+    function syncStateFromDOM() {
+        const rows = document.querySelectorAll('.channel-row');
+        rows.forEach((row, i) => {
+            if (currentChannels[i]) {
+                const labelInput = row.querySelector('.custom-label-input');
+                const selects = row.querySelectorAll('select');
+                if (labelInput) currentChannels[i].label = labelInput.value;
+                if (selects[0]) currentChannels[i].endA = selects[0].value;
+                if (selects[1]) currentChannels[i].endB = selects[1].value;
+            }
+        });
+    }
+
+    function cycleColor(index) {
+        syncStateFromDOM();
+        const ch = currentChannels[index];
+        const currentColorIndex = standardColors.findIndex(c => c.name === ch.colorName);
+        const nextColorIndex = (currentColorIndex + 1) % standardColors.length;
+        
+        ch.colorName = standardColors[nextColorIndex].name;
+        ch.colorHex = standardColors[nextColorIndex].hex;
+        
+        renderApp();
+    }
+
+    function renderApp() {
+        const container = document.getElementById('channelsContainer');
+        container.innerHTML = '';
+
+        currentChannels.forEach((chData, i) => {
+            const row = document.createElement('div');
+            row.className = 'channel-row';
+            row.draggable = true;
+            row.dataset.index = i;
+
+            row.addEventListener('dragstart', handleDragStart);
+            row.addEventListener('dragover', handleDragOver);
+            row.addEventListener('drop', handleDrop);
+            row.addEventListener('dragend', handleDragEnd);
+            
+            let markerHtml = `
+                <span style="user-select: none;">Ch ${i + 1}</span>
+                <div class="color-badge-inline" onclick="cycleColor(${i})" title="Click to cycle color">
+                    <span class="color-dot" style="background-color: ${chData.colorHex};"></span>
+                    <span>${chData.colorName}</span>
+                </div>
+            `;
+
+            let labelInput = `<input type="text" class="custom-label-input" value="${chData.label}" oninput="updateAll()" placeholder="Label">`;
+
+            let endASelect = `<select class="connector-select" onchange="updateAll()">`;
+            connectorOptions.forEach((opt) => {
+                let selected = chData.endA === opt ? 'selected' : '';
+                endASelect += `<option value="${opt}" ${selected}>${opt}</option>`;
+            });
+            endASelect += `</select>`;
+
+            let endBSelect = `<select class="connector-select" onchange="updateAll()">`;
+            connectorOptions.forEach((opt) => {
+                let selected = chData.endB === opt ? 'selected' : '';
+                endBSelect += `<option value="${opt}" ${selected}>${opt}</option>`;
+            });
+            endBSelect += `</select>`;
+
+            let reorderControls = `
+                <div class="reorder-btns">
+                    <button class="btn-mini" onclick="moveChannel(${i}, -1)" ${i === 0 ? 'disabled style="opacity:0.3;"' : ''}>▲</button>
+                    <button class="btn-mini" onclick="moveChannel(${i}, 1)" ${i === currentChannels.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>▼</button>
+                </div>
+            `;
+
+            row.innerHTML = `
+                <div class="drag-handle" title="Drag to reorder">☰</div>
+                <div class="channel-label">${markerHtml}</div>
+                <div class="field-col"><label>Label</label>${labelInput}</div>
+                <div class="field-col"><label>End A</label>${endASelect}</div>
+                <div class="field-col"><label>End B</label>${endBSelect}</div>
+                <div style="text-align: center;">${reorderControls}</div>
+            `;
+
+            container.appendChild(row);
+        });
+
+        updateAll();
+    }
+
+    function handleDragStart(e) {
+        syncStateFromDOM();
+        draggedItemIndex = parseInt(this.dataset.index);
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        const targetIndex = parseInt(this.dataset.index);
+        if (isNaN(draggedItemIndex) || draggedItemIndex === targetIndex) return;
+
+        const movedItem = currentChannels.splice(draggedItemIndex, 1)[0];
+        currentChannels.splice(targetIndex, 0, movedItem);
+
+        renderApp();
+    }
+
+    function handleDragEnd() {
+        this.classList.remove('dragging');
+        draggedItemIndex = null;
+    }
+
+    function moveChannel(index, direction) {
+        syncStateFromDOM();
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= currentChannels.length) return;
+        
+        const temp = currentChannels[index];
+        currentChannels[index] = currentChannels[targetIndex];
+        currentChannels[targetIndex] = temp;
+
+        renderApp();
+    }
+    window.moveChannel = moveChannel;
+
+    function changePairCount() {
+        syncStateFromDOM();
+        const count = parseInt(document.getElementById('pairCount').value);
+        
+        if (count > currentChannels.length) {
+            for (let i = currentChannels.length; i < count; i++) {
+                const colorObj = standardColors[i % standardColors.length];
+                currentChannels.push({
+                    label: defaultLabels[i] || `Track ${i + 1}`,
+                    endA: "XLR Male",
+                    endB: "XLR Female",
+                    colorName: colorObj.name,
+                    colorHex: colorObj.hex
+                });
+            }
+        } else if (count < currentChannels.length) {
+            currentChannels = currentChannels.slice(0, count);
+        }
+        
+        renderApp();
+    }
+
+    function updateAll() {
+        syncStateFromDOM();
+        updateVisuals();
+        updateSummary();
+    }
+
+    function updateVisuals() {
+        const labelType = document.getElementById('labelType').value;
+        const endAList = document.getElementById('visualEndAList');
+        const endBList = document.getElementById('visualEndBList');
+
+        endAList.innerHTML = '';
+        endBList.innerHTML = '';
+
+        currentChannels.forEach((chData, i) => {
+            const customLabel = chData.label || `Channel ${i + 1}`;
+            const endAVal = chData.endA;
+            const endBVal = chData.endB;
+            const hex = chData.colorHex;
+            const name = chData.colorName;
+
+            const indicatorBorder = labelType === 'colored' ? hex : '#38bdf8';
+            const baseMarker = labelType === 'numbered' ? `[${i + 1}]` : `[${name}]`;
+
+            const iconA = connectorIcons[endAVal] || '';
+            const iconB = connectorIcons[endBVal] || '';
+
+            const itemA = document.createElement('div');
+            itemA.className = 'visual-item';
+            itemA.style.borderLeftColor = indicatorBorder;
+            itemA.innerHTML = `
+                <div>
+                    <span style="font-size:0.65rem; color:#94a3b8; display:block;">${baseMarker}</span>
+                    <strong style="font-size:0.85rem;">${customLabel}</strong>
+                </div>
+                <span class="connector-badge">${iconA} ${endAVal}</span>
+            `;
+            endAList.appendChild(itemA);
+
+            const itemB = document.createElement('div');
+            itemB.className = 'visual-item visual-item-right';
+            itemB.style.borderRightColor = indicatorBorder;
+            itemB.innerHTML = `
+                <span class="connector-badge">${iconB} ${endBVal}</span>
+                <div style="text-align:right;">
+                    <span style="font-size:0.65rem; color:#94a3b8; display:block;">${baseMarker}</span>
+                    <strong style="font-size:0.85rem;">${customLabel}</strong>
+                </div>
+            `;
+            endBList.appendChild(itemB);
+        });
+    }
+
+    function updateSummary() {
+        const count = document.getElementById('pairCount').value;
+        const labelType = document.getElementById('labelType').value;
+        
+        let summaryHTML = `<p><strong>Total Cables:</strong> ${count}-Pair Multicore Audio Cable</p>`;
+        summaryHTML += `<p><strong>Identifier Scheme:</strong> ${labelType.charAt(0).toUpperCase() + labelType.slice(1)}</p>`;
+        summaryHTML += `<ul>`;
+
+        currentChannels.forEach((chData, index) => {
+            const customLabel = chData.label || `Channel ${index + 1}`;
+            let baseIdentifier = labelType === 'numbered' ? `Ch ${index + 1} (${chData.colorName})` : `${chData.colorName}`;
+
+            summaryHTML += `<li><strong>${baseIdentifier} ("${customLabel}"):</strong> End A (${chData.endA}) ➔ End B (${chData.endB})</li>`;
+        });
+
+        summaryHTML += `</ul>`;
+        document.getElementById('summaryText').innerHTML = summaryHTML;
+    }
+
+    function saveConfiguration() {
+        syncStateFromDOM();
+        const state = {
+            pairCount: document.getElementById('pairCount').value,
+            labelType: document.getElementById('labelType').value,
+            channels: currentChannels
+        };
+        localStorage.setItem('audioSnakeConfig', JSON.stringify(state));
+        alert('Configuration saved successfully!');
+    }
+
+    function loadConfiguration() {
+        const saved = localStorage.getItem('audioSnakeConfig');
+        if (!saved) {
+            alert('No saved configuration found.');
+            return;
+        }
+        const state = JSON.parse(saved);
+        document.getElementById('pairCount').value = state.pairCount;
+        document.getElementById('labelType').value = state.labelType;
+        currentChannels = state.channels;
+        renderApp();
+        alert('Configuration loaded successfully!');
+    }
+
+    function exportJSON() {
+        syncStateFromDOM();
+        const state = {
+            pairCount: document.getElementById('pairCount').value,
+            labelType: document.getElementById('labelType').value,
+            channels: currentChannels
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "audio_snake_config.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importJSON(event) {
+        const fileReader = new FileReader();
+        if (event.target.files[0]) {
+            fileReader.readAsText(event.target.files[0], "UTF-8");
+            fileReader.onload = (e) => {
+                try {
+                    const state = JSON.parse(e.target.result);
+                    state.channels.forEach((ch, i) => {
+                        if (!ch.colorName || !ch.colorHex) {
+                            const colorObj = standardColors[i % standardColors.length];
+                            ch.colorName = colorObj.name;
+                            ch.colorHex = colorObj.hex;
+                        }
+                    });
+                    document.getElementById('pairCount').value = state.pairCount;
+                    document.getElementById('labelType').value = state.labelType;
+                    currentChannels = state.channels;
+                    renderApp();
+                    alert('Configuration imported successfully!');
+                } catch (err) {
+                    alert('Invalid JSON configuration file.');
+                }
+            };
+        }
+    }
+
+    window.onload = () => {
+        initDefaultChannels();
+        renderApp();
+    };
+</script>
+
+</body>
+</html>
